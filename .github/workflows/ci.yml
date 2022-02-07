@@ -29,8 +29,8 @@ jobs:
       run: |
         chmod 777 -R ./ci
         ./ci/build.sh
-    # - name: Update manifest
-    #   env:
-    #     PERSONAL_ACCESS_TOKEN: ${{ secrets.GITOPS_PASSWORD }}
-    #   run: |
-    #     ./ci/updateManifest.sh
+    - name: Update manifest
+      env:
+        PERSONAL_ACCESS_TOKEN: ${{ secrets.GITOPS_PASSWORD }}
+      run: |
+        ./ci/updateManifest.sh
