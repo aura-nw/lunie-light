@@ -1,32 +1,32 @@
 export default {
-  id: 'cosmos-hub-testnet', // DEPRECATE, only used for Lunie extension, NOT CHAIN ID
-  name: 'Cosmos Stargate',
+  id: 'aura-testnet', // DEPRECATE, only used for Lunie extension, NOT CHAIN ID
+  name: 'Aura',
   description:
     'Cosmos is a network of independent parallel blockchains, powered by BFT consensus algorithms like Tendermint.',
   logo: `logo.svg`,
-  website: 'https://cosmos.network',
-  apiURL: 'http://localhost:8010/proxy', // use `npx lcp --proxyUrl http://34.123.30.100:1317`
-  rpcURL: 'ws://34.123.30.100:26657',
-  stakingDenom: 'MUON',
+  website: 'https://aura.network',
+  apiURL: 'http://18.138.28.51:1317', // use `npx lcp --proxyUrl http://34.123.30.100:1317`
+  rpcURL: 'http://18.138.28.51:26657',
+  stakingDenom: 'AURA',
   coinLookup: [
     {
-      viewDenom: 'MUON',
-      chainDenom: 'umuon',
+      viewDenom: 'AURA',
+      chainDenom: 'uaura',
       chainToViewConversionFactor: 1e-6,
       icon: `currencies/muon.png`,
     },
   ],
-  addressPrefix: 'cosmos',
-  validatorAddressPrefix: 'cosmosvaloper',
-  validatorConsensusaddressPrefix: 'cosmosvalcons', // needed to map validators from staking queries to the validator set
+  addressPrefix: 'aura',
+  validatorAddressPrefix: 'auravaloper',
+  validatorConsensusaddressPrefix: 'auravalcons', // needed to map validators from staking queries to the validator set
   HDPath: `m/44'/118'/0'/0/0`,
   lockUpPeriod: `3 days`,
   fees: {
     default: {
-      gasEstimate: 350000,
+      gasEstimate: 80000,
       feeOptions: [
         {
-          denom: 'MUON',
+          denom: 'AURA',
           amount: 0.001,
         },
       ],

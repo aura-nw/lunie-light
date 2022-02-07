@@ -6,7 +6,7 @@ const hexToValidatorAddress = (address, validatorPrefix) => {
   return bech32.encode(validatorPrefix, words)
 }
 const pubkeyToAddress = (cosmosvalconspub, validatorConsensusBech32Prefix) => {
-  const words = bech32.decode(cosmosvalconspub).words
+  const words = bech32.decode(cosmosvalconspub.value).words
   // publickey is prefixed somehow (probably amino)
   const publicKey = Buffer.from(
     Buffer.from(bech32.fromWords(words)).toString('hex').substr(10),

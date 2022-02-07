@@ -1,51 +1,36 @@
-name: ci
+name: Continuous integration
 
 on:
   push:
-    branches:
-      - main
-      - master
-  pull_request:
-    branches:
-      - main
-      - master
+    branches: [ dev ]
 
 jobs:
-  ci:
-    runs-on: ${{ matrix.os }}
 
-    strategy:
-      matrix:
-        os: [ubuntu-latest]
-        node: [14]
+  build:
+
+    runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout 🛎
-        uses: actions/checkout@master
-
-      - name: Setup node env 🏗
-        uses: actions/setup-node@v2.1.2
-        with:
-          node-version: ${{ matrix.node }}
-
-      - name: Get yarn cache directory path 🛠
-        id: yarn-cache-dir-path
-        run: echo "::set-output name=dir::$(yarn cache dir)"
-
-      - name: Cache node_modules 📦
-        uses: actions/cache@v2
-        id: yarn-cache # use this to check for `cache-hit` (`steps.yarn-cache.outputs.cache-hit != 'true'`)
-        with:
-          path: ${{ steps.yarn-cache-dir-path.outputs.dir }}
-          key: ${{ runner.os }}-yarn-${{ hashFiles('**/yarn.lock') }}
-          restore-keys: |
-            ${{ runner.os }}-yarn-
-
-      - name: Install dependencies 👨🏻‍💻
-        run: yarn
-
-      - name: Run linter 👀
-        run: yarn lint
-
-        # - name: Run tests 🧪
-        #   run: yarn test
+    - uses: actions/checkout@v2
+    - name: Set environment variable
+      run: |
+        SHORT_SHA_COMMIT=$(git rev-parse --short HEAD)
+        echo CONTAINER_RELEASE_IMAGE=ghcr.io/aura-nw/lunie-light:${GITHUB_REF_NAME}_${SHORT_SHA_COMMIT} >> $GITHUB_ENV
+        echo REPO_MANIFEST_NAME=gitops >> $GITHUB_ENV
+        echo REPO_MANIFEST_URL=github.com/aura-nw/gitops.git >> $GITHUB_ENV
+        echo REPO_MANIFEST_BRANCH=master >> $GITHUB_ENV
+        echo REPO_MANIFEST_ENV_DEV=./clusters/k8s-dev >> $GITHUB_ENV
+        echo REPO_MANIFEST_ENV_MAIN=./clusters/k8s-main >> $GITHUB_ENV
+        echo REPO_MANIFEST_TAG_IMAGE=image_lunie_light_frontend >> $GITHUB_ENV
+    - name: Build the Docker image and push it to the registry
+      env:
+        GITHUB_USERNAME: ${{ secrets.REGISTRY_USERNAME }}
+        GITHUB_PASSWORD: ${{ secrets.REGISTRY_PASSWORD }}
+      run: |
+        chmod 777 -R ./ci
+        ./ci/build.sh
+    # - name: Update manifest
+    #   env:
+    #     PERSONAL_ACCESS_TOKEN: ${{ secrets.GITOPS_PASSWORD }}
+    #   run: |
+    #     ./ci/updateManifest.sh

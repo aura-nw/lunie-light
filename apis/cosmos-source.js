@@ -1,7 +1,8 @@
 import BigNumber from 'bignumber.js'
 import { keyBy, orderBy, take, reverse, sortBy, chunk } from 'lodash'
+import { pubkeyToAddress } from '@cosmjs/amino'
 import * as reducers from './cosmos-reducers'
-import { encodeB32, decodeB32, pubkeyToAddress } from '~/common/address'
+import { encodeB32, decodeB32 } from '~/common/address'
 import { setDecimalLength } from '~/common/numbers'
 import network from '~/common/network'
 
@@ -169,9 +170,9 @@ export default class CosmosAPI {
       signedBlocksWindow,
     ] = await Promise.all([
       Promise.all([
-        this.query(`staking/validators?status=unbonding`),
-        this.query(`staking/validators?status=bonded`),
-        this.query(`staking/validators?status=unbonded`),
+        this.query(`staking/validators?status=BOND_STATUS_UNBONDING`),
+        this.query(`staking/validators?status=BOND_STATUS_BONDED`),
+        this.query(`staking/validators?status=BOND_STATUS_UNBONDED`),
       ]).then((validatorGroups) => [].concat(...validatorGroups)),
       this.getAnnualProvision().catch(() => undefined),
       this.getValidatorSet(height),
