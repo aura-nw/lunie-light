@@ -48,14 +48,14 @@ export function getStakingCoinViewAmount(chainStakeAmount) {
 export function coinReducer(chainCoin, ibcInfo) {
   const chainDenom = ibcInfo ? ibcInfo.denom : chainCoin.denom
   const coinLookup = network.getCoinLookup(chainDenom)
-  const sourceChain = ibcInfo ? ibcInfo.chainTrace[0] : undefined
+  // const sourceChain = ibcInfo ? ibcInfo.chainTrace[0] : undefined
 
   if (!coinLookup) {
     return {
       supported: false,
       amount: chainCoin.amount,
-      denom: chainDenom,
-      sourceChain,
+      denom: chainCoin.denom,
+      // sourceChain,
     }
   }
 
@@ -69,7 +69,7 @@ export function coinReducer(chainCoin, ibcInfo) {
       .times(coinLookup.chainToViewConversionFactor)
       .toFixed(precision),
     denom: coinLookup.viewDenom,
-    sourceChain,
+    // sourceChain,
   }
 }
 
@@ -560,20 +560,19 @@ export function transactionReducer(transaction) {
       transaction.tx.value &&
       Array.isArray(transaction.tx.value.fee.amount)
     ) {
+      console.log(transaction)
       fees = transaction.tx.value.fee.amount.map((coin) => {
-        const coinLookup = network.getCoinLookup(network, coin.denom)
+        const coinLookup = network.getCoinLookup(coin.denom)
         return coinReducer(coin, coinLookup)
       })
+      console.log(fees)
     } else {
       fees = transaction.tx.auth_info.fee.amount.map((fee) => {
-        const coinLookup = network.getCoinLookup(network, fee.denom)
+        const coinLookup = network.getCoinLookup(fee.denom)
         return coinReducer(fee, coinLookup)
       })
     }
-    const {
-      claimMessages,
-      otherMessages,
-    } = transaction.tx.body.messages.reduce(
+    const { claimMessages, otherMessages } = transaction.tx.value.msg.reduce(
       ({ claimMessages, otherMessages }, message) => {
         // we need to aggregate all withdraws as we display them together in one transaction
         if (getMessageType(message.type) === lunieMessageTypes.CLAIM_REWARDS) {
@@ -608,14 +607,14 @@ export function transactionReducer(transaction) {
           transaction
         ),
         timestamp: transaction.timestamp,
-        memo: transaction.tx.body.memo,
+        memo: transaction.tx.value.memo,
         fees,
         success: setTransactionSuccess(transaction, messageIndex),
         log: getTransactionLogs(transaction, messageIndex),
         involvedAddresses: extractInvolvedAddresses(
           transaction.logs.find(
             ({ msg_index: msgIndex }) => msgIndex === messageIndex
-          ).events
+          )
         ),
         rawMessage: {
           type,
