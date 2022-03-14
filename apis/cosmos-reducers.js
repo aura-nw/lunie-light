@@ -560,12 +560,10 @@ export function transactionReducer(transaction) {
       transaction.tx.value &&
       Array.isArray(transaction.tx.value.fee.amount)
     ) {
-      console.log(transaction)
       fees = transaction.tx.value.fee.amount.map((coin) => {
         const coinLookup = network.getCoinLookup(coin.denom)
         return coinReducer(coin, coinLookup)
       })
-      console.log(fees)
     } else {
       fees = transaction.tx.auth_info.fee.amount.map((fee) => {
         const coinLookup = network.getCoinLookup(fee.denom)
@@ -681,7 +679,7 @@ export function validatorReducer(
     websiteURL = `https://` + websiteURL
   }
 
-  return {
+  const result = {
     id: validator.operator_address,
     operatorAddress: validator.operator_address,
     consensusPubkey: validator.consensus_pubkey,
@@ -713,6 +711,17 @@ export function validatorReducer(
         ).toFixed(6)
       : undefined,
   }
+  console.log('annualProvision', annualProvision)
+  console.log(
+    'expected rewards',
+    expectedRewardsPerToken(
+      validator,
+      validator.commission.commission_rates.rate,
+      annualProvision
+    ).toFixed(6)
+  )
+  console.log('validatorReducer', result)
+  return result
 }
 
 export function extractInvolvedAddresses(messageEvents) {

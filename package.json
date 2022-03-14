@@ -16,11 +16,6 @@
     "*.{js,vue}": "eslint",
     "*.{css,vue}": "stylelint"
   },
-  "husky": {
-    "hooks": {
-      "pre-commit": "lint-staged"
-    }
-  },
   "dependencies": {
     "@cosmjs/amino": "^0.27.0",
     "@cosmjs/stargate": "^0.27.0",

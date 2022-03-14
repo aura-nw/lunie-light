@@ -1,6 +1,14 @@
 import BigNumber from 'bignumber.js'
-import { makeStdTx, makeSignDoc } from '@cosmjs/launchpad'
-import axios from 'axios'
+import { SigningStargateClient } from '@cosmjs/stargate'
+import {
+  makeAuthInfoBytes,
+  makeSignDoc,
+  encodePubkey,
+  coins,
+} from '@cosmjs/proto-signing'
+import { toBase64 } from '@cosmjs/encoding'
+// import { MsgSend } from 'cosmjs-types/cosmos/bank/v1beta1/tx'
+// import axios from 'axios'
 import { getSigner } from './signer'
 import messageCreators from './messages.js'
 import fees from '~/common/fees'
@@ -48,9 +56,9 @@ export async function createSignBroadcast({
     accountNumber: accountInfo.accountNumber,
     accountSequence: accountInfo.sequence,
   }
-
+  // console.log('account', accountInfo)
   let signedTx
-
+  let broadcastResult
   if (signingType === 'extension') {
     signedTx = await signWithExtension(
       messageType,
@@ -69,7 +77,9 @@ export async function createSignBroadcast({
       chainId,
       ledgerTransport
     )
-
+    // console.log('signer', signer)
+    const account = await signer.getAccounts()
+    // console.log('account', account[0])
     const messages = messageCreators[messageType](
       senderAddress,
       message,
@@ -79,7 +89,7 @@ export async function createSignBroadcast({
     const signDoc = makeSignDoc(
       [].concat(messages),
       {
-        amount: transactionData.fee,
+        amount: transactionData.fee[0].amount,
         gas: transactionData.gasEstimate,
       },
       chainId,
@@ -88,21 +98,65 @@ export async function createSignBroadcast({
       accountInfo.sequence
     )
 
-    const { signed, signature } = await signer.sign(senderAddress, signDoc)
-    signedTx = makeStdTx(signed, signature)
+    const pubkey = encodePubkey({
+      type: 'tendermint/PubKeySecp256k1',
+      value: toBase64(account[0].pubkey),
+    })
+    const sequence = accountInfo.sequence
+    const authInfoBytes = makeAuthInfoBytes(
+      [{ pubkey, sequence }],
+      transactionData.fee,
+      transactionData.gasEstimate
+    )
+    // console.log('authInfoBytes', authInfoBytes)
+    // const { signed, signature } = await signer.sign(senderAddress, signDoc)
+    const client = await SigningStargateClient.connectWithSigner(
+      network.rpcURL,
+      signer
+    )
+    // console.log('client', client)
+    // signedTx = makeStdTx(signed, signature)
+    // console.log('signedTx', signed)
+    // console.log('signature', signature)
+
+    // success
+    const messagesSend = messageCreators[messageType](
+      senderAddress,
+      message,
+      network
+    )
+
+    const fee = {
+      amount: coins(20, 'uaura'),
+      gas: '200000',
+    }
+    broadcastResult = await client.signAndBroadcast(
+      senderAddress,
+      [messagesSend],
+      fee
+    )
+    console.log('broadcastResult', broadcastResult)
+
+    // const result = await client.signAndBroadcast(senderAddress, [messages], feeData )
+    // console.log(result);
   }
 
-  const broadcastBody = {
-    tx: signedTx,
-    mode: 'sync', // if we use async we don't wait for checks on the tx to have passed so we don't get errors
-  }
-  const broadcastResult = await axios
-    .post(`${network.apiURL}/txs`, broadcastBody)
-    .then((res) => res.data)
+  // const broadcastBody = {
+  //   tx: signedTx,
+  //   mode: 'sync', // if we use async we don't wait for checks on the tx to have passed so we don't get errors
+  // }
+  // const broadcastResult = await axios
+  //   .post(`${network.apiURL}/txs`, broadcastBody)
+  //   .then((res) => res.data)
+  // const client = await StargateClient.connect(network.apiURL)
+  // const result = await client.broadcastTx(signedTx)
+
+  // console.log(result)
+
   assertIsBroadcastTxSuccess(broadcastResult)
 
   return {
-    hash: broadcastResult.txhash,
+    hash: broadcastResult.transactionHash,
   }
 }
 
@@ -126,7 +180,7 @@ export function assertIsBroadcastTxSuccess(res) {
     throw new Error(message)
   }
 
-  if (!res.txhash) {
+  if (!res.transactionHash) {
     const message = res.message
     throw new Error(message)
   }
