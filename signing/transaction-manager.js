@@ -67,6 +67,7 @@ export async function createSignBroadcast({
       senderAddress,
       network
     )
+    console.log(signedTx)
   } else {
     const signer = await getSigner(
       signingType,
@@ -97,7 +98,7 @@ export async function createSignBroadcast({
       accountInfo.accountNumber,
       accountInfo.sequence
     )
-
+    console.log(signDoc)
     const pubkey = encodePubkey({
       type: 'tendermint/PubKeySecp256k1',
       value: toBase64(account[0].pubkey),
@@ -108,7 +109,7 @@ export async function createSignBroadcast({
       transactionData.fee,
       transactionData.gasEstimate
     )
-    // console.log('authInfoBytes', authInfoBytes)
+    console.log('authInfoBytes', authInfoBytes)
     // const { signed, signature } = await signer.sign(senderAddress, signDoc)
     const client = await SigningStargateClient.connectWithSigner(
       network.rpcURL,

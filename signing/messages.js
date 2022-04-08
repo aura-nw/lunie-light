@@ -114,26 +114,47 @@ export function VoteTx(senderAddress, { proposalId, voteOption }) {
     NoWithVeto: 4,
   }[voteOption]
   /* istanbul ignore next */
-  return {
-    type: `cosmos-sdk/MsgVote`,
-    value: {
-      voter: senderAddress,
-      proposal_id: proposalId,
-      option: chainVoteOption,
-    },
+  // return {
+  //   type: `cosmos-sdk/MsgVote`,
+  //   value: {
+  //     voter: senderAddress,
+  //     proposal_id: proposalId,
+  //     option: chainVoteOption,
+  //   },
+  // }
+  /* istanbul ignore next */
+  const msg = {
+    option: chainVoteOption,
+    proposalId,
+    voter: senderAddress,
   }
+  const aminoMsg = {
+    typeUrl: '/cosmos.gov.v1beta1.MsgVote',
+    value: msg,
+  }
+  return aminoMsg
 }
 
 export function DepositTx(senderAddress, { proposalId, amount }, network) {
   /* istanbul ignore next */
-  return {
-    type: `cosmos-sdk/MsgDeposit`,
-    value: {
-      depositor: senderAddress,
-      proposal_id: proposalId,
-      amount: [Coin(amount, network.coinLookup)],
-    },
+  // return {
+  //   type: `cosmos-sdk/MsgDeposit`,
+  //   value: {
+  //     depositor: senderAddress,
+  //     proposal_id: proposalId,
+  //     amount: [Coin(amount, network.coinLookup)],
+  //   },
+  // }
+  const msg = {
+    amount: [{ amount, denom: network.coinLookup }],
+    depositor: senderAddress,
+    proposalId,
   }
+  const aminoMsg = {
+    typeUrl: '/cosmos.gov.v1beta1.MsgDeposit',
+    value: msg,
+  }
+  return aminoMsg
 }
 
 export function Coin({ amount, denom }, coinLookup) {

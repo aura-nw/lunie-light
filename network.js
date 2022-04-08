@@ -5,8 +5,8 @@ export default {
     'Cosmos is a network of independent parallel blockchains, powered by BFT consensus algorithms like Tendermint.',
   logo: `logo.svg`,
   website: 'https://aura.network',
-  apiURL: 'https://rpc-testnet.aura.network', // use `npx lcp --proxyUrl http://34.123.30.100:1317`
-  rpcURL: 'https://tendermint-testnet.aura.network',
+  apiURL: 'http://34.199.79.132:1317', // use `npx lcp --proxyUrl http://34.123.30.100:1317`
+  rpcURL: 'http://34.199.79.132:26657',
   stakingDenom: 'AURA',
   coinLookup: [
     {
